@@ -1,0 +1,40 @@
+{
+    "tasks":{
+        "-NercnBhZYVIaVVrm-OY":{
+            "code": "QF-7484",
+            "header": "Müşteri Bilgilerinin Güncellenmesi ile ilgili Mersis verisinin yanlış gelmesi",
+            "type": "BUG",
+            "status": "1",
+            "createdAt": "01-01-2023",
+            "title": "Fix Bug A",
+            "comments": {
+                "-NerfehZYVIaVVrm-OY":{
+                    "text": "fixleeolacak orum bekleniyor.",
+                    "date": "01-01-2023 15: 30"
+                },
+                "-NekkngtYVIaVVrm-OY":{
+                    "text": "Yoruma istinaden master oratama çıkıldı",
+                    "date": "01-01-2023 16: 30"
+                }
+            }
+        },
+        "-NkgkawjdlVIaVVrm-OY":{
+            "code": "QF-7485",
+            "header": "esi ile ilgili Mersis verisinin yanlış gelmesi",
+            "type": "CR",
+            "status": "0",
+            "createdAt": "01-01-2023",
+            "title": "Fix Bug A",
+            "comments": {}
+        },
+        "-Nercnaşksddpolpfm-OY":{
+            "code": "QF-7486",
+            "header": "Müış gelmesi",
+            "type": "CR",
+            "status": "1",
+            "createdAt": "01-01-2023",
+            "title": "Fix Bug A",
+            "comments": {}
+        }
+    }
+}

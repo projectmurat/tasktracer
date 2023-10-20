@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Listesi</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Firebase App CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.2.7/firebase-app.js"></script>
+
+    <!-- Firebase Database CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.2.7/firebase-database.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="taskFirebase.js"></script>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2>Task Listesi</h2>
+        <div class="filters">
+            <div class="search-wrapper">
+                <input type="text" id="searchBox" placeholder="Task koduna göre ara...">
+                <i class="search-icon">🔍</i>
+            </div>
+            <div class="btn-group">
+                <button class="filter-btn" id="showCompleted">Tamamlananları Göster</button>
+                <button class="filter-btn" id="showOngoing">Devam Edenleri Göster</button>
+                <button class="filter-btn" id="addTaskButton" style="background-color: #00a1ff;">Yeni Ekle</button>
+            </div>
+        </div>
+        <span style="margin: 10px;" id="sumRegisterSpan"></span>
+        <div class="loaderText" id="loaderText">Yükleniyor</div>
+        <div class="loader" id="loader"></div>
+        <ul id="taskList" style="margin-top: 10px;"></ul>
+
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="taskDetailsModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskModalLabel">Task Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="task-container">
+                        <div class="task-header">
+                            <div>
+                                <span class="task-title-label">Task Title: </span>
+                                <span class="task-title" id="taskTitle"></span>
+                            </div>
+                            <div>
+                                <span class="task-code-label">Task Code: </span>
+                                <span class="task-code" id="taskCode"></span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <button id="completedTaskButton"
+                                style="background-color: #4CAF50; color: white; border: none; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; transition-duration: 0.4s;">
+                                Taskı Tamamlandı Yap
+                            </button>
+                        </div>
+                        <div>
+                            <strong>Comments:</strong>
+                            <span id="commentCountSpan"></span>
+                            <ul id="taskComments">
+                                <!-- Comments will be dynamically added here -->
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Add New Task Modal -->
+    <div class="modal fade" id="taskAddModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskModalLabel">Add New Task</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="type">Label:</label>
+                    <select id="labelType">
+                        <option value="VF" selected>Vodafone</option>
+                        <option value="QF" selected>Quick Finans</option>
+                        <!-- Diğer tipleri buraya ekleyebilirsiniz -->
+                    </select>
+
+                    <label for="code">Code:</label>
+                    <input type="text" id="code" placeholder="Task Kodu">
+
+                    <label for="header">Header:</label>
+                    <input type="text" id="header" placeholder="Task Header">
+
+                    <label for="type">Type:</label>
+                    <select id="taskType">
+                        <option value="BUG" selected>BUG</option>
+                        <option value="FEATURE" selected>FEATURE</option>
+                        <!-- Diğer tipleri buraya ekleyebilirsiniz -->
+                    </select>
+
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" placeholder="Task mini başlık">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="btnTaskAdd">Task Ekle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Your JavaScript -->
+    <script src="taskUtil.js"></script>
+    <script src="script.js"></script>
+
+    <link rel="stylesheet" href="task.css">
+</body>
+
+</html>
