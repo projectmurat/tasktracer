@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchBox = document.getElementById('searchBox');
     const showCompleted = document.getElementById('showCompleted');
     const showOngoing = document.getElementById('showOngoing');
+    const showAll = document.getElementById('showAll');
     const addTaskButton = document.getElementById('addTaskButton');
     const taskList = document.getElementById('taskList');
     const sumRegisterSpan = document.getElementById('sumRegisterSpan');
@@ -14,12 +15,14 @@ document.addEventListener('DOMContentLoaded', function () {
     searchBox.addEventListener('input', filterTasks);
     showCompleted.addEventListener('click', () => filterTasksByStatus("1"));
     showOngoing.addEventListener('click', () => filterTasksByStatus("0"));
+    showAll.addEventListener('click', () => showAllTasks());
     addTaskButton.addEventListener('click', () => $('#taskAddModal').modal('show'));
     document.querySelector('.search-icon').addEventListener('click', () => filterTasks());
     btnTaskAdd.addEventListener('click', () => saveTask());
     btnSetTaskCompleted.addEventListener('click', () => setTaskCompleted());
 
     function renderTasks(filteredTasks) {
+        filteredTasks.sort((a, b) => convertDate(b.lastUpdated).getTime() - convertDate(a.lastUpdated).getTime());
         taskList.innerHTML = '';
         sumRegisterSpan.innerText = "Toplam Kayıt Sayısı: " + filteredTasks.length;
         filteredTasks.forEach(task => {
@@ -36,12 +39,12 @@ document.addEventListener('DOMContentLoaded', function () {
             deleteIcon.className = 'fas fa-trash-alt'; // Font Awesome silme ikonu
             deleteIcon.id = task.id;
             deleteIcon.style.position = 'absolute'; // Üst sağ köşeye yerleştirmek için mutlak konumlandırma
-            deleteIcon.style.top = '1px'; // Üstten boşluk
-            deleteIcon.style.right = '1px'; // Sağdan boşluk
+            deleteIcon.style.top = '7px'; // Üstten boşluk
+            deleteIcon.style.right = '7px'; // Sağdan boşluk
             deleteIcon.style.cursor = 'pointer'; // Fare imlecini el simgesi yapmak için
             deleteIcon.addEventListener('click', function (e) {
                 e.stopPropagation(); // Ana öğe üzerindeki tıklama olayını engellemek için
-                if (confirm("Bu görevi silmek istediğinize emin misiniz?")) {
+                if (confirm( this.id + " id'li görevi silmek istediğinize emin misiniz?")) {
                     let path = DB.TASK + this.id;
                     firebase.database().ref(path).remove()
                         .then(function () {
@@ -52,20 +55,22 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                 }
             });
-            taskItem.appendChild(deleteIcon);
+            //taskItem.appendChild(deleteIcon);
 
             // taskImage ve taskType'ı içeren konteyner
             const taskInfoContainer = document.createElement('div');
             taskInfoContainer.style.display = 'flex';
             taskInfoContainer.style.alignItems = 'center'; // İçeriklerin dikey eksende merkezlenmesi için
 
+            taskInfoContainer.appendChild(deleteIcon);
+
             // Resmi oluşturma
             const taskImage = document.createElement('img');
             taskImage.src = company;  // Resminizin URL'sini buraya ekleyin
             taskImage.alt = "Resmin açıklaması"; // Resmin açıklamasını buraya ekleyin (isteğe bağlı)
             taskImage.style.marginRight = '10px'; // Resim ile metin arasında biraz boşluk bırakmak için
-            taskImage.width = taskCompany == "QF" ? "75" : "50";
-            taskImage.height = "50";
+            taskImage.width = taskCompany == "QF" ? "125" : "80";
+            taskImage.height = "80";
             taskInfoContainer.appendChild(taskImage); // Resmi konteynera ekleyin
 
             const taskType = document.createElement('span');
@@ -114,6 +119,37 @@ document.addEventListener('DOMContentLoaded', function () {
             updateDateContainer.appendChild(taskUpdatedDate);
 
             dateContainer.appendChild(updateDateContainer);
+
+            // Tamamlanma Tarihi için Konteyner
+            if (task.completionDate != "null") {
+                const completionDateContainer = document.createElement('div');
+                completionDateContainer.className = 'date-info-container';
+
+                // Yeni eklenen tik ikonu
+                const checkmarkIcon = document.createElement('span');
+                checkmarkIcon.innerText = '✔';
+                checkmarkIcon.style.color = 'green'; // Yeşil renkli
+                checkmarkIcon.style.marginRight = '5px'; // Sağa biraz boşluk ekleyin
+                checkmarkIcon.style.padding = "1px 6px";
+                checkmarkIcon.style.fontSize = "20px";
+                completionDateContainer.appendChild(checkmarkIcon);
+
+                const taskCompletionDateLabel = document.createElement('span');
+                taskCompletionDateLabel.className = 'task-date-label';
+                taskCompletionDateLabel.style.color = "#8840b6";
+                taskCompletionDateLabel.innerText = 'Tamamlanma Tarihi:';
+                completionDateContainer.appendChild(taskCompletionDateLabel);
+
+                const taskCompletionDate = document.createElement('span');
+                taskCompletionDate.className = 'task-date';
+                taskCompletionDate.style.color = "#8840b6";
+                taskCompletionDate.style.fontWeight = "bolder";
+                taskCompletionDate.innerText = task.completionDate;
+                completionDateContainer.appendChild(taskCompletionDate);
+
+                dateContainer.appendChild(completionDateContainer);
+
+            }
 
             // Toplam Yorum Sayısı için Konteyner
             const commentVountContainer = document.createElement('div');
@@ -281,13 +317,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function filterTasks() {
         const searchTerm = searchBox.value.toLowerCase();
-        const filteredTasks = tasks.filter(task => task.code.toLowerCase().includes(searchTerm));
-        renderTasks(filteredTasks);
+        const filteredTasks = tasks.filter(task =>
+            task.code.toLowerCase().includes(searchTerm) ||
+            task.header.toLowerCase().includes(searchTerm) ||
+            task.header.toLowerCase().includes(searchTerm)
+        );
+        let result = filteredTasks.filter(task => {
+            if (task.comments != undefined) {
+                let thisTaskComment = Object.values(task.comments);
+                if (thisTaskComment.length > 0) {
+                    return thisTaskComment.some(comment => comment.text.toLowerCase().includes(searchTerm));
+                }
+                return false;
+            }
+            return false;
+
+        });
+        renderTasks(result);
     }
 
     function filterTasksByStatus(status) {
         const filteredTasks = tasks.filter(task => task.status === status);
         renderTasks(filteredTasks);
+    }
+
+    function showAllTasks(params) {
+        renderTasks(tasks);
     }
 
     function saveTask() {
@@ -310,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function () {
             createdAt: DATE_NOW,
             title: title,
             lastUpdated: DATE_NOW,
+            completionDate: "null",
             comments: {}
         };
         FirebaseRealtime.SaveTask({
@@ -317,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
             params: taskObject,
             done: (saveResponse) => {
                 if (saveResponse) {
-                    console.log("EKLENEN TASK:", taskObject)
+                    $('#taskAddModal').modal('hide');
                 }
             },
             fail: (error) => {
@@ -329,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function () {
         FirebaseRealtime.UpdateTask({
             path: DB.TASK,
             where: { "key": selectedTask.id },
-            params: { "status": STATUS.COMPLETE },
+            params: { "status": STATUS.COMPLETE, "completionDate": DATE_NOW },
             done: (updateResponse) => {
                 if (updateResponse) {
                     btnSetTaskCompleted.style.display = "none";
@@ -377,6 +433,44 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
     }
+    document.getElementById("filterIcon").addEventListener("click", function () {
+        const menu = document.getElementById("filterMenu");
+        menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+        event.stopPropagation();
+    });
+    document.addEventListener("click", function () {
+        const menu = document.getElementById("filterMenu");
+        if (menu.style.display === "block") {
+            menu.style.display = "none";
+        }
+    });
+    function convertDate(str) {
+        const months = {
+            "Oca": 0,
+            "Şub": 1,
+            "Mar": 2,
+            "Nis": 3,
+            "May": 4,
+            "Haz": 5,
+            "Tem": 6,
+            "Ağu": 7,
+            "Eyl": 8,
+            "Eki": 9,
+            "Kas": 10,
+            "Ara": 11
+        };
+
+        const parts = str.split(' ');
+        const day = parseInt(parts[0], 10);
+        const month = months[parts[1]];
+        const year = parseInt(parts[2], 10);
+        const timeParts = parts[4].split(':');
+        const hour = parseInt(timeParts[0], 10);
+        const minute = parseInt(timeParts[1], 10);
+        const second = parseInt(timeParts[2], 10);
+
+        return new Date(year, month, day, hour, minute, second);
+    }
 
     FirebaseRealtime.QueryTasks({
         path: DB.TASK,
@@ -404,3 +498,4 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
 });
+
