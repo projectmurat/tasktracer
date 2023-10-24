@@ -38,9 +38,9 @@
                 <div class="filter-dropdown">
                     <button id="filterIcon" class="filter-icon">Filtrele &#9662;</button>
                     <div id="filterMenu" class="filter-menu">
-                        <button class="filter-btn" id="showCompleted">Tamamlananları Göster</button>
-                        <button class="filter-btn" id="showOngoing">Devam Edenleri Göster</button>
-                        <button class="filter-btn" id="showAll">Tümünü Göster</button>
+                        <button class="filter-btn" id="showCompleted">Tamamlananlar</button>
+                        <button class="filter-btn" id="showOngoing">Devam Edenler</button>
+                        <button class="filter-btn" id="showAll">Tümü</button>
                     </div>
                 </div>
                 <button class="filter-btn" id="addTaskButton" style="background-color: #00a1ff;">Yeni Ekle</button>
@@ -69,12 +69,12 @@
                     <div class="task-container">
                         <div class="task-header">
                             <div>
-                                <span class="task-title-label">Task Title: </span>
-                                <span class="task-title" id="taskTitle"></span>
-                            </div>
-                            <div>
                                 <span class="task-code-label">Task Code: </span>
                                 <span class="task-code" id="taskCode"></span>
+                            </div>
+                            <div>
+                                <span class="task-title-label">Task Description: </span>
+                                <span class="task-title" id="taskTitle"></span>
                             </div>
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -135,11 +135,12 @@
                     <select id="taskType">
                         <option value="BUG" selected>BUG</option>
                         <option value="FEATURE" selected>FEATURE</option>
+                        <option value="HOTFIX" selected>HOTFIX</option>
                         <!-- Diğer tipleri buraya ekleyebilirsiniz -->
                     </select>
 
-                    <label for="title">Title:</label>
-                    <input type="text" id="title" placeholder="Task mini başlık">
+                    <label for="title">Description:</label>
+                    <input type="text" id="title" placeholder="Task Açıklaması">
 
                 </div>
                 <div class="modal-footer">

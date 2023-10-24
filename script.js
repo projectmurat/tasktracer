@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
             deleteIcon.style.cursor = 'pointer'; // Fare imlecini el simgesi yapmak için
             deleteIcon.addEventListener('click', function (e) {
                 e.stopPropagation(); // Ana öğe üzerindeki tıklama olayını engellemek için
-                if (confirm(this.id + " id'li görevi silmek istediğinize emin misiniz?")) {
+                if (confirm("[ " + task.code + " ]" + " kodlu taskı silmek istediğinize emin misiniz?")) {
                     let path = DB.TASK + this.id;
                     firebase.database().ref(path).remove()
                         .then(function () {
@@ -179,8 +179,9 @@ document.addEventListener('DOMContentLoaded', function () {
             taskItem.appendChild(taskStatus);
 
             taskItem.addEventListener('click', function () {
-                displayTaskDetails(task);
                 $('#taskDetailsModal').modal('show');
+                displayTaskDetails(task);
+
             });
 
             taskList.appendChild(taskItem);
@@ -197,7 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
         commentsList.innerHTML = '';
 
         // Mevcut yorumları ekleyin
-        Object.values(task.comments || []).forEach(addCommentToDOM);
+        Object.values(task.comments || []).sort((a, b) => convertDate(b.date).getTime() - convertDate(a.date).getTime()).forEach(addCommentToDOM);
+        //Object.values(task.comments || []).forEach(addCommentToDOM);
 
         // Yeni yorum için boş bir satır ekleyin
         const newCommentItem = createEditableCommentItem('', '', '');
@@ -347,12 +349,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function filterTasksByStatus(status) {
         const filteredTasks = tasks.filter(task => task.status === status);
         renderTasks(filteredTasks);
-        chooseFilterSpanInfo.innerText = status == "1" ? CHOOSE_FILTER.COMPLETE : CHOOSE_FILTER.CONTINUING;
+        chooseFilterSpanInfo.innerText = status == "1" ? "Filter: "+CHOOSE_FILTER.COMPLETE : "Filter: "+CHOOSE_FILTER.CONTINUING;
     }
 
     function showAllTasks(params) {
         renderTasks(tasks);
-        chooseFilterSpanInfo.innerText = CHOOSE_FILTER.ALL;
+        chooseFilterSpanInfo.innerText = "Filter: "+CHOOSE_FILTER.ALL;
     }
 
     function saveTask() {
@@ -519,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             tasks = Object.values(queryResults);
             renderTasks(tasks.filter(i => i.status == "0"));
-            chooseFilterSpanInfo.innerText = CHOOSE_FILTER.CONTINUING;
+            chooseFilterSpanInfo.innerText = "Filter: "+CHOOSE_FILTER.CONTINUING;
         },
         fail: (error) => {
             throw new Error("QueryTasks Error").stack;

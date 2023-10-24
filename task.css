@@ -84,6 +84,13 @@ body {
     display: flex;
     align-items: center;
 }
+.task-type.hotfix{
+    background-color: #ebb601;
+    color: white;
+    height: 50px;
+    display: flex;
+    align-items: center;
+}
 
 .filters {
     display: flex;
@@ -108,6 +115,7 @@ body {
     transition: border-color 0.3s;
     background: #212121;
     color: #969696;
+    box-shadow: -5px 6px 5px rgb(0 0 0 / 50%);
 }
 
 #searchBox:focus {
@@ -136,7 +144,8 @@ body {
     outline: none;
     width: 100%;
     border-radius: 5px;
-    color:rgb(86, 86, 86)
+    color:rgb(86, 86, 86);
+    box-shadow: -5px 6px 5px rgba(0, 0, 0, 0.5);
 }
 
 .filter-btn:hover {
@@ -158,6 +167,7 @@ body {
     border-radius: 5px;
     outline: none;
     width: 120px;
+    box-shadow: -5px 6px 5px rgba(0, 0, 0, 0.5);
 }
 
 .filter-menu {
@@ -204,6 +214,7 @@ body {
     flex-direction: column;
     gap: 10px;
     transition: all 0.3s ease;
+    box-shadow: -5px 6px 5px rgba(8, 255, 3, 0.5);
 }
 
 .task-item:hover {
@@ -320,7 +331,6 @@ body {
 }
 
 .task-header {
-    display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid #e1e1e1;
@@ -330,7 +340,7 @@ body {
 
 .task-title,
 .task-code {
-    font-size: 1.2em;
+    font-size: 1.0em;
     color: #0000009c;
     font-weight: bold;
 }
