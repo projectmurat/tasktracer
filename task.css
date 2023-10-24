@@ -325,7 +325,7 @@ body {
     word-break: break-word;
     font-size: 15px;
     display: flex;
-    min-width: 245px;
+    min-width: 325px;
     background-color: #f3efef;
     border-radius: 8px;
     padding: 5px;
@@ -546,4 +546,9 @@ body {
     padding: 5px 10px; /* İçerik etrafındaki boşluklar */
     border-radius: 5px; /* Köşe yuvarlama */
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Gölge efekti */
+}
+
+.modal-dialog {
+    max-width: 650px !important;
+    margin: 1.75rem auto;
 }
