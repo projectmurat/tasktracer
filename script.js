@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const sumRegisterSpan = document.getElementById('sumRegisterSpan');
     const btnTaskAdd = document.getElementById('btnTaskAdd');
     const btnSetTaskCompleted = document.getElementById("completedTaskButton");
+    const btnSetTaskKeepGoing = document.getElementById("keepTaskButton");
+    const chooseFilterSpanInfo = document.getElementById("chooseFilterLabelSpan");
 
     searchBox.addEventListener('input', filterTasks);
     showCompleted.addEventListener('click', () => filterTasksByStatus("1"));
@@ -20,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('.search-icon').addEventListener('click', () => filterTasks());
     btnTaskAdd.addEventListener('click', () => saveTask());
     btnSetTaskCompleted.addEventListener('click', () => setTaskCompleted());
+    btnSetTaskKeepGoing.addEventListener('click', () => setTaskKeepGoing());
 
     function renderTasks(filteredTasks) {
         filteredTasks.sort((a, b) => convertDate(b.lastUpdated).getTime() - convertDate(a.lastUpdated).getTime());
@@ -44,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
             deleteIcon.style.cursor = 'pointer'; // Fare imlecini el simgesi yapmak için
             deleteIcon.addEventListener('click', function (e) {
                 e.stopPropagation(); // Ana öğe üzerindeki tıklama olayını engellemek için
-                if (confirm( this.id + " id'li görevi silmek istediğinize emin misiniz?")) {
+                if (confirm(this.id + " id'li görevi silmek istediğinize emin misiniz?")) {
                     let path = DB.TASK + this.id;
                     firebase.database().ref(path).remove()
                         .then(function () {
@@ -186,7 +189,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function displayTaskDetails(task) {
         selectedTask = task;
-        document.getElementById("completedTaskButton").style.display = task.status == "1" ? "none" : "block"
+        btnSetTaskCompleted.style.display = task.status == "1" ? "none" : "block"
+        btnSetTaskKeepGoing.style.display = task.status == "0" ? "none" : "block"
         const commentsList = document.getElementById('taskComments');
         document.getElementById("taskCode").innerText = task.code
         document.getElementById("taskTitle").innerText = task.title
@@ -317,32 +321,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function filterTasks() {
         const searchTerm = searchBox.value.toLowerCase();
-        const filteredTasks = tasks.filter(task =>
+        let result;
+        result = tasks.filter(task =>
             task.code.toLowerCase().includes(searchTerm) ||
             task.header.toLowerCase().includes(searchTerm) ||
             task.header.toLowerCase().includes(searchTerm)
         );
-        let result = filteredTasks.filter(task => {
-            if (task.comments != undefined) {
-                let thisTaskComment = Object.values(task.comments);
-                if (thisTaskComment.length > 0) {
-                    return thisTaskComment.some(comment => comment.text.toLowerCase().includes(searchTerm));
+        if (result.length == 0) {
+            result = tasks.filter(task => {
+                if (task.comments != undefined) {
+                    let thisTaskComment = Object.values(task.comments);
+                    if (thisTaskComment.length > 0) {
+                        return thisTaskComment.some(comment => comment.text.toLowerCase().includes(searchTerm));
+                    }
+                    return false;
                 }
                 return false;
-            }
-            return false;
 
-        });
+            });
+        }
+
         renderTasks(result);
     }
 
     function filterTasksByStatus(status) {
         const filteredTasks = tasks.filter(task => task.status === status);
         renderTasks(filteredTasks);
+        chooseFilterSpanInfo.innerText = status == "1" ? CHOOSE_FILTER.COMPLETE : CHOOSE_FILTER.CONTINUING;
     }
 
     function showAllTasks(params) {
         renderTasks(tasks);
+        chooseFilterSpanInfo.innerText = CHOOSE_FILTER.ALL;
     }
 
     function saveTask() {
@@ -389,6 +399,24 @@ document.addEventListener('DOMContentLoaded', function () {
             done: (updateResponse) => {
                 if (updateResponse) {
                     btnSetTaskCompleted.style.display = "none";
+                    btnSetTaskKeepGoing.style.display = "block";
+                    updateLastUpdated();
+                }
+            },
+            fail: (error) => {
+                throw new Error("UpdateTask eRROR").stack;
+            }
+        })
+    }
+    function setTaskKeepGoing(params) {
+        FirebaseRealtime.UpdateTask({
+            path: DB.TASK,
+            where: { "key": selectedTask.id },
+            params: { "status": STATUS.CONTINUING, "completionDate": "null" },
+            done: (updateResponse) => {
+                if (updateResponse) {
+                    btnSetTaskKeepGoing.style.display = "none";
+                    btnSetTaskCompleted.style.display = "block";
                     updateLastUpdated();
                 }
             },
@@ -490,7 +518,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
             tasks = Object.values(queryResults);
-            renderTasks(tasks);
+            renderTasks(tasks.filter(i => i.status == "0"));
+            chooseFilterSpanInfo.innerText = CHOOSE_FILTER.CONTINUING;
         },
         fail: (error) => {
             throw new Error("QueryTasks Error").stack;
