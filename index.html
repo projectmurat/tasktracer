@@ -27,7 +27,7 @@
 
     <div class="container mt-5" style="margin-top: 1rem!important;">
         <div class="header">
-            <h1>BUSINESS TASK LIST</h1>
+            <h1>İş Takip Simülasyonu</h1>
         </div>
         <div class="filters">
             <div class="search-wrapper">
@@ -40,6 +40,7 @@
                     <div id="filterMenu" class="filter-menu">
                         <button class="filter-btn" id="showCompleted">Tamamlananlar</button>
                         <button class="filter-btn" id="showOngoing">Devam Edenler</button>
+                        <button class="filter-btn" id="showCanceled">İptal Edilenler</button>
                         <button class="filter-btn" id="showAll">Tümü</button>
                     </div>
                 </div>
@@ -60,7 +61,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="taskModalLabel">Task Details</h5>
+                    <h5 class="modal-title" id="taskModalLabel">İş Detayı</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -69,11 +70,15 @@
                     <div class="task-container">
                         <div class="task-header">
                             <div>
-                                <span class="task-code-label">Task Code: </span>
+                                <span class="task-code-label">İş Kodu: </span>
                                 <span class="task-code" id="taskCode"></span>
+                                <button class="copy-button" id="copy-button" onclick="copyToClipboard('#taskCode')" title="Panoya Kopyala">
+                                    <i class="fas fa-solid fa-copy"></i>
+                                </button>
+
                             </div>
                             <div>
-                                <span class="task-title-label">Task Description: </span>
+                                <span class="task-title-label">İş Açıklaması: </span>
                                 <span class="task-title" id="taskTitle"></span>
                             </div>
                         </div>
@@ -81,7 +86,7 @@
 
                         </div>
                         <div>
-                            <strong>Comments:</strong>
+                            <strong>Yorumlar:</strong>
                             <span id="commentCountSpan"></span>
                             <ul id="taskComments">
                                 <!-- Comments will be dynamically added here -->
@@ -91,14 +96,18 @@
                     </div>
                 </div>
                 <div class="modal-footer detail-modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
                     <button id="completedTaskButton"
                         style="background-color: #4CAF50; color: white; border: none; padding: 6px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; transition-duration: 0.4s;">
-                        Taskı Tamamlandı Yap
+                        Tamamlandı Yap
                     </button>
                     <button id="keepTaskButton"
                         style="background-color: #e0ce2b; color: white; border: none; padding: 6px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; transition-duration: 0.4s;">
                         Taskı Devam Ettir
+                    </button>
+                    <button id="cancelTaskButton"
+                        style="background-color: #ff2100; color: white; border: none; padding: 6px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; transition-duration: 0.4s;">
+                        Taskı İptal Et
                     </button>
                 </div>
             </div>
@@ -118,20 +127,20 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <label for="type">Label:</label>
+                    <label for="type">Ortam:</label>
                     <select id="labelType">
                         <option value="VF" selected>Vodafone</option>
                         <option value="QF" selected>Quick Finans</option>
                         <!-- Diğer tipleri buraya ekleyebilirsiniz -->
                     </select>
 
-                    <label for="code">Code:</label>
+                    <label for="code">Kod:</label>
                     <input type="text" id="code" placeholder="Task Kodu">
 
-                    <label for="header">Header:</label>
-                    <input type="text" id="header" placeholder="Task Header">
+                    <label for="header">Başlık:</label>
+                    <input type="text" id="header" placeholder="Task Başlığı">
 
-                    <label for="type">Type:</label>
+                    <label for="type">Tür:</label>
                     <select id="taskType">
                         <option value="BUG" selected>BUG</option>
                         <option value="FEATURE" selected>FEATURE</option>
@@ -139,13 +148,13 @@
                         <!-- Diğer tipleri buraya ekleyebilirsiniz -->
                     </select>
 
-                    <label for="title">Description:</label>
+                    <label for="title">Açıklama:</label>
                     <input type="text" id="title" placeholder="Task Açıklaması">
 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success" id="btnTaskAdd">Task Ekle</button>
+                    <button type="button" class="btn btn-success" id="btnTaskAdd">Add Task</button>
                 </div>
             </div>
         </div>

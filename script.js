@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchBox = document.getElementById('searchBox');
     const showCompleted = document.getElementById('showCompleted');
     const showOngoing = document.getElementById('showOngoing');
+    const showCanceled = document.getElementById('showCanceled');
     const showAll = document.getElementById('showAll');
     const addTaskButton = document.getElementById('addTaskButton');
     const taskList = document.getElementById('taskList');
@@ -12,17 +13,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnTaskAdd = document.getElementById('btnTaskAdd');
     const btnSetTaskCompleted = document.getElementById("completedTaskButton");
     const btnSetTaskKeepGoing = document.getElementById("keepTaskButton");
+    const btnSetTaskCancel = document.getElementById("cancelTaskButton");
     const chooseFilterSpanInfo = document.getElementById("chooseFilterLabelSpan");
+    const copyClipBoardButton = document.getElementById("copy-button");
 
     searchBox.addEventListener('input', filterTasks);
-    showCompleted.addEventListener('click', () => filterTasksByStatus("1"));
-    showOngoing.addEventListener('click', () => filterTasksByStatus("0"));
+    showCompleted.addEventListener('click', () => filterTasksByStatus(STATUS.COMPLETE));
+    showOngoing.addEventListener('click', () => filterTasksByStatus(STATUS.CONTINUING));
+    showCanceled.addEventListener('click', () => filterTasksByStatus(STATUS.CANCEL));
     showAll.addEventListener('click', () => showAllTasks());
     addTaskButton.addEventListener('click', () => $('#taskAddModal').modal('show'));
     document.querySelector('.search-icon').addEventListener('click', () => filterTasks());
     btnTaskAdd.addEventListener('click', () => saveTask());
     btnSetTaskCompleted.addEventListener('click', () => setTaskCompleted());
     btnSetTaskKeepGoing.addEventListener('click', () => setTaskKeepGoing());
+    btnSetTaskCancel.addEventListener('click',() => setTaskCancel());
+    copyClipBoardButton.addEventListener('click',() => copyToClipboard());
+
 
     function renderTasks(filteredTasks) {
         filteredTasks.sort((a, b) => convertDate(b.lastUpdated).getTime() - convertDate(a.lastUpdated).getTime());
@@ -153,6 +160,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 dateContainer.appendChild(completionDateContainer);
 
             }
+            if (task.cancelDate != "null") {
+                const completionDateContainer = document.createElement('div');
+                completionDateContainer.className = 'date-info-container';
+
+                // Yeni eklenen tik ikonu
+                const checkmarkIcon = document.createElement('span');
+                checkmarkIcon.innerText = 'X';
+                checkmarkIcon.style.color = 'red'; // Yeşil renkli
+                checkmarkIcon.style.marginRight = '5px'; // Sağa biraz boşluk ekleyin
+                checkmarkIcon.style.padding = "1px 6px";
+                checkmarkIcon.style.fontSize = "20px";
+                completionDateContainer.appendChild(checkmarkIcon);
+
+                const taskCompletionDateLabel = document.createElement('span');
+                taskCompletionDateLabel.className = 'task-date-label';
+                taskCompletionDateLabel.style.color = "rgb(255 0 0)";
+                taskCompletionDateLabel.innerText = 'İptal Edilme Tarihi:';
+                completionDateContainer.appendChild(taskCompletionDateLabel);
+
+                const taskCompletionDate = document.createElement('span');
+                taskCompletionDate.className = 'task-date';
+                taskCompletionDate.style.color = "rgb(255 0 0)";
+                taskCompletionDate.style.fontWeight = "bolder";
+                taskCompletionDate.innerText = task.cancelDate;
+                completionDateContainer.appendChild(taskCompletionDate);
+
+                dateContainer.appendChild(completionDateContainer);
+
+            }
 
             // Toplam Yorum Sayısı için Konteyner
             const commentVountContainer = document.createElement('div');
@@ -173,8 +209,26 @@ document.addEventListener('DOMContentLoaded', function () {
             taskItem.appendChild(dateContainer);
 
             const taskStatus = document.createElement('span');
-            taskStatus.className = `task-status ${task.status === '1' ? 'completed' : 'ongoing'}`;
-            taskStatus.innerText = task.status == "1" ? "Tamamlandı" : "Devam Ediyor";
+            let className = `task-status `;
+            let innerText = "";
+            switch (task.status) {
+                case STATUS.CONTINUING:
+                    className += 'ongoing';
+                    innerText = "Devam Ediyor";
+                    break;
+                case STATUS.COMPLETE:
+                    className += 'completed';
+                    innerText = "Tamamlandı";
+                    break;
+                case STATUS.CANCEL:
+                    className += 'canceled';
+                    innerText = "İptal Edildi";
+                    break;
+                default:
+                    break;
+            }
+            taskStatus.className = className;
+            taskStatus.innerText = innerText;
 
             taskItem.appendChild(taskStatus);
 
@@ -190,8 +244,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function displayTaskDetails(task) {
         selectedTask = task;
-        btnSetTaskCompleted.style.display = task.status == "1" ? "none" : "block"
-        btnSetTaskKeepGoing.style.display = task.status == "0" ? "none" : "block"
+        switch (task.status) {
+            case STATUS.CONTINUING: // 0
+                //task devam ediyor ise tamamlandı yapabiliyoruz ya da iptal edebiliyoruz.
+                btnSetTaskCompleted.style.display = "block";
+                btnSetTaskCancel.style.display = "block";
+                btnSetTaskKeepGoing.style.display = "none";
+                break;
+            case STATUS.COMPLETE: // 1
+                // task tamamlandı ise sadece devam ettirebiliyoruz. İptal Edemiyoruz.
+                btnSetTaskCancel.style.display = "none";
+                btnSetTaskKeepGoing.style.display = "block";
+                btnSetTaskCompleted.style.display = "none";
+                break;
+            case STATUS.CANCEL: // 3
+                //task iptal ise hiçbir şey yapamıyoruz.
+                btnSetTaskCompleted.style.display = "none";
+                btnSetTaskKeepGoing.style.display = "none";
+                btnSetTaskCancel.style.display = "none";
+                break;
+            default:
+                break;
+        }
         const commentsList = document.getElementById('taskComments');
         document.getElementById("taskCode").innerText = task.code
         document.getElementById("taskTitle").innerText = task.title
@@ -349,7 +423,22 @@ document.addEventListener('DOMContentLoaded', function () {
     function filterTasksByStatus(status) {
         const filteredTasks = tasks.filter(task => task.status === status);
         renderTasks(filteredTasks);
-        chooseFilterSpanInfo.innerText = status == "1" ? "Filter: "+CHOOSE_FILTER.COMPLETE : "Filter: "+CHOOSE_FILTER.CONTINUING;
+        let message = "Filter: ";
+        switch (status) {
+            case STATUS.CONTINUING:
+                message += CHOOSE_FILTER.CONTINUING;
+                break;
+            case STATUS.COMPLETE:
+                message += CHOOSE_FILTER.COMPLETE;
+                break;
+            case STATUS.CANCEL:
+                message += CHOOSE_FILTER.CANCEL;
+                break;
+            default:
+                message += CHOOSE_FILTER.ALL;
+                break;
+        }
+        chooseFilterSpanInfo.innerText = message;
     }
 
     function showAllTasks(params) {
@@ -378,7 +467,8 @@ document.addEventListener('DOMContentLoaded', function () {
             title: title,
             lastUpdated: DATE_NOW,
             completionDate: "null",
-            comments: {}
+            comments: {},
+            cancelDate:"null"
         };
         FirebaseRealtime.SaveTask({
             path: DB.TASK,
@@ -419,6 +509,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (updateResponse) {
                     btnSetTaskKeepGoing.style.display = "none";
                     btnSetTaskCompleted.style.display = "block";
+                    updateLastUpdated();
+                }
+            },
+            fail: (error) => {
+                throw new Error("UpdateTask eRROR").stack;
+            }
+        })
+    }
+    function setTaskCancel(){
+        FirebaseRealtime.UpdateTask({
+            path: DB.TASK,
+            where: { "key": selectedTask.id },
+            params: { "status": STATUS.CANCEL, "cancelDate": DATE_NOW },
+            done: (updateResponse) => {
+                if (updateResponse) {
+                    btnSetTaskCancel.style.display = "none";
+                    btnSetTaskKeepGoing.style.display = "block";
                     updateLastUpdated();
                 }
             },
@@ -500,6 +607,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const second = parseInt(timeParts[2], 10);
 
         return new Date(year, month, day, hour, minute, second);
+    }
+    function copyToClipboard() {
+        navigator.clipboard.writeText(selectedTask.code).then(function() {
+            alert("Panoya kopyalandı!");
+        }, function() {
+            /* clipboard write failed */
+            alert("Panoya kopyalanırken hata oluştu!");
+        });
     }
 
     FirebaseRealtime.QueryTasks({

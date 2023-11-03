@@ -260,6 +260,11 @@ body {
     color: white;
 }
 
+.canceled {
+    background-color: #ff2100;
+    color: white;
+}
+
 #taskComments {
     padding: 0;
     list-style-type: none;
@@ -505,4 +510,53 @@ body {
 .modal-dialog {
     max-width: 650px !important;
     margin: 1.75rem auto;
+}
+
+.copy-button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+/* İsteğe bağlı olarak ikon boyutunu ayarlayabilirsiniz */
+.copy-button .fas {
+    font-size: 20px;
+}
+.copy-button .fas:hover {
+    font-size: 25px;
+    transition: font-size 0.3s ease; /* Yavaş geçiş efekti için */
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black; /* Opsiyonel: tooltip tetikleyicisini görselleştirme */
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Pozisyonlandırma */
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    margin-left: -60px;
+
+    /* Fade-in efekti */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
 }
