@@ -1,4 +1,4 @@
-/*firebase.initializeApp({
+firebase.initializeApp({
     apiKey: "AIzaSyB7rwTvnjUrsL-493Yf6LwDW-Yi59kONLQ",
     authDomain: "tasktracer-ee23b.firebaseapp.com",
     databaseURL: "https://tasktracer-ee23b-default-rtdb.firebaseio.com",
@@ -7,8 +7,8 @@
     messagingSenderId: "893591020493",
     appId: "1:893591020493:web:23487c19b7bf62d1a61a84",
     measurementId: "G-QYW8E5CP8X"
-});*/
-firebase.initializeApp({
+});
+/*firebase.initializeApp({
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
     databaseURL: process.env.FIREBASE_DATABASE_URL,
@@ -17,7 +17,7 @@ firebase.initializeApp({
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASURE_ID
-});
+});*/
 let FirebaseRealtime = (
     function () {
         /**
