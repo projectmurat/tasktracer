@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnSetTaskCompleted = document.getElementById("completedTaskButton");
     const btnSetTaskKeepGoing = document.getElementById("keepTaskButton");
     const btnSetTaskCancel = document.getElementById("cancelTaskButton");
+    const btnDeleteTaskCancel = document.getElementById("deleteTaskButton");
     const chooseFilterSpanInfo = document.getElementById("chooseFilterLabelSpan");
     const copyClipBoardButton = document.getElementById("copy-button");
 
@@ -21,13 +22,14 @@ document.addEventListener('DOMContentLoaded', function () {
     showCompleted.addEventListener('click', () => filterTasksByStatus(STATUS.COMPLETE));
     showOngoing.addEventListener('click', () => filterTasksByStatus(STATUS.CONTINUING));
     showCanceled.addEventListener('click', () => filterTasksByStatus(STATUS.CANCEL));
-    showAll.addEventListener('click', () => showAllTasks());
+    showAll.addEventListener('click', () => showAllTasks("*"));
     addTaskButton.addEventListener('click', () => $('#taskAddModal').modal('show'));
     document.querySelector('.search-icon').addEventListener('click', () => filterTasks());
     btnTaskAdd.addEventListener('click', () => saveTask());
     btnSetTaskCompleted.addEventListener('click', () => setTaskCompleted());
     btnSetTaskKeepGoing.addEventListener('click', () => setTaskKeepGoing());
     btnSetTaskCancel.addEventListener('click',() => setTaskCancel());
+    btnDeleteTaskCancel.addEventListener('click',() => deleteTask());
     copyClipBoardButton.addEventListener('click',() => copyToClipboard());
 
 
@@ -46,49 +48,46 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             const deleteIcon = document.createElement('i');
-            deleteIcon.className = 'fas fa-trash-alt'; // Font Awesome silme ikonu
+            deleteIcon.className = 'fas fa-trash-alt';
             deleteIcon.id = task.id;
-            deleteIcon.style.position = 'absolute'; // Üst sağ köşeye yerleştirmek için mutlak konumlandırma
-            deleteIcon.style.top = '7px'; // Üstten boşluk
-            deleteIcon.style.right = '7px'; // Sağdan boşluk
-            deleteIcon.style.cursor = 'pointer'; // Fare imlecini el simgesi yapmak için
+            deleteIcon.style.position = 'absolute';
+            deleteIcon.style.top = '7px';
+            deleteIcon.style.right = '7px';
+            deleteIcon.style.cursor = 'pointer';
             deleteIcon.addEventListener('click', function (e) {
-                e.stopPropagation(); // Ana öğe üzerindeki tıklama olayını engellemek için
+                e.stopPropagation();
                 if (confirm("[ " + task.code + " ]" + " kodlu taskı silmek istediğinize emin misiniz?")) {
                     let path = DB.TASK + this.id;
                     firebase.database().ref(path).remove()
                         .then(function () {
-                            console.log("Görev silindi!"); // Konsola bir mesaj yazdır (isteğe bağlı)
+                            console.log("Görev silindi!");
                         })
                         .catch(function (error) {
                             throw new Error("delete comment error", error).stack;
                         });
                 }
             });
-            //taskItem.appendChild(deleteIcon);
 
-            // taskImage ve taskType'ı içeren konteyner
             const taskInfoContainer = document.createElement('div');
             taskInfoContainer.style.display = 'flex';
-            taskInfoContainer.style.alignItems = 'center'; // İçeriklerin dikey eksende merkezlenmesi için
+            taskInfoContainer.style.alignItems = 'center';
 
             taskInfoContainer.appendChild(deleteIcon);
 
-            // Resmi oluşturma
             const taskImage = document.createElement('img');
-            taskImage.src = company;  // Resminizin URL'sini buraya ekleyin
-            taskImage.alt = "Resmin açıklaması"; // Resmin açıklamasını buraya ekleyin (isteğe bağlı)
-            taskImage.style.marginRight = '10px'; // Resim ile metin arasında biraz boşluk bırakmak için
+            taskImage.src = company;
+            taskImage.alt = "Resmin açıklaması";
+            taskImage.style.marginRight = '10px';
             taskImage.width = taskCompany == "QF" ? "125" : "80";
             taskImage.height = "80";
-            taskInfoContainer.appendChild(taskImage); // Resmi konteynera ekleyin
+            taskInfoContainer.appendChild(taskImage);
 
             const taskType = document.createElement('span');
             taskType.className = `task-type ${task.type.toLowerCase()}`;
             taskType.innerText = task.type;
-            taskInfoContainer.appendChild(taskType); // Metni konteynera ekleyin
+            taskInfoContainer.appendChild(taskType);
 
-            taskItem.appendChild(taskInfoContainer); // Konteyneri taskItem'a ekleyin
+            taskItem.appendChild(taskInfoContainer);
 
             const taskCode = document.createElement('span');
             taskCode.className = 'task-code';
@@ -98,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const dateContainer = document.createElement('div');
             dateContainer.className = 'date-container';
 
-            // Oluşturulma Tarihi için Konteyner
             const createDateContainer = document.createElement('div');
             createDateContainer.className = 'date-info-container';
 
@@ -114,7 +112,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             dateContainer.appendChild(createDateContainer);
 
-            // Son Güncelleme Tarihi için Konteyner
             const updateDateContainer = document.createElement('div');
             updateDateContainer.className = 'date-info-container';
 
@@ -130,16 +127,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             dateContainer.appendChild(updateDateContainer);
 
-            // Tamamlanma Tarihi için Konteyner
             if (task.completionDate != "null") {
                 const completionDateContainer = document.createElement('div');
                 completionDateContainer.className = 'date-info-container';
 
-                // Yeni eklenen tik ikonu
                 const checkmarkIcon = document.createElement('span');
                 checkmarkIcon.innerText = '✔';
-                checkmarkIcon.style.color = 'green'; // Yeşil renkli
-                checkmarkIcon.style.marginRight = '5px'; // Sağa biraz boşluk ekleyin
+                checkmarkIcon.style.color = 'green';
+                checkmarkIcon.style.marginRight = '5px';
                 checkmarkIcon.style.padding = "1px 6px";
                 checkmarkIcon.style.fontSize = "20px";
                 completionDateContainer.appendChild(checkmarkIcon);
@@ -164,11 +159,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const completionDateContainer = document.createElement('div');
                 completionDateContainer.className = 'date-info-container';
 
-                // Yeni eklenen tik ikonu
                 const checkmarkIcon = document.createElement('span');
                 checkmarkIcon.innerText = 'X';
-                checkmarkIcon.style.color = 'red'; // Yeşil renkli
-                checkmarkIcon.style.marginRight = '5px'; // Sağa biraz boşluk ekleyin
+                checkmarkIcon.style.color = 'red';
+                checkmarkIcon.style.marginRight = '5px';
                 checkmarkIcon.style.padding = "1px 6px";
                 checkmarkIcon.style.fontSize = "20px";
                 completionDateContainer.appendChild(checkmarkIcon);
@@ -190,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
-            // Toplam Yorum Sayısı için Konteyner
             const commentVountContainer = document.createElement('div');
             commentVountContainer.className = 'date-info-container';
 
@@ -245,20 +238,17 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayTaskDetails(task) {
         selectedTask = task;
         switch (task.status) {
-            case STATUS.CONTINUING: // 0
-                //task devam ediyor ise tamamlandı yapabiliyoruz ya da iptal edebiliyoruz.
+            case STATUS.CONTINUING:
                 btnSetTaskCompleted.style.display = "block";
                 btnSetTaskCancel.style.display = "block";
                 btnSetTaskKeepGoing.style.display = "none";
                 break;
-            case STATUS.COMPLETE: // 1
-                // task tamamlandı ise sadece devam ettirebiliyoruz. İptal Edemiyoruz.
+            case STATUS.COMPLETE:
                 btnSetTaskCancel.style.display = "none";
                 btnSetTaskKeepGoing.style.display = "block";
                 btnSetTaskCompleted.style.display = "none";
                 break;
-            case STATUS.CANCEL: // 3
-                //task iptal ise hiçbir şey yapamıyoruz.
+            case STATUS.CANCEL:
                 btnSetTaskCompleted.style.display = "none";
                 btnSetTaskKeepGoing.style.display = "none";
                 btnSetTaskCancel.style.display = "none";
@@ -271,15 +261,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("taskTitle").innerText = task.title
         commentsList.innerHTML = '';
 
-        // Mevcut yorumları ekleyin
         Object.values(task.comments || []).sort((a, b) => convertDate(b.date).getTime() - convertDate(a.date).getTime()).forEach(addCommentToDOM);
-        //Object.values(task.comments || []).forEach(addCommentToDOM);
 
-        // Yeni yorum için boş bir satır ekleyin
         const newCommentItem = createEditableCommentItem('', '', '');
         commentsList.appendChild(newCommentItem);
 
-        //comment sayısını yaz
         document.getElementById("commentCountSpan").innerText = task.comments ? Object.keys(task.comments).length : 0;
     }
 
@@ -295,29 +281,25 @@ document.addEventListener('DOMContentLoaded', function () {
         const saveButton = document.createElement('button');
         const commentContainer = document.createElement('div');
 
-        // Yorum içeriği alanı
         commentContent.contentEditable = true;
         commentContent.className = 'comment-content ' + id;
         commentContent.innerText = text;
-        commentContent.dataset.initialText = text;  // Başlangıç değerini saklayalım
-        commentContent.addEventListener('input', handleCommentInput); // Yorum değişikliklerini dinleyin
+        commentContent.dataset.initialText = text;
+        commentContent.addEventListener('input', handleCommentInput);
 
-        // Yorum tarihi alanı
         commentDate.className = 'comment-date';
         commentDate.innerText = date;
 
-        // Yorum kaydetme butonu işlevi
         saveButton.className = 'save-comment-btn';
         saveButton.innerText = 'Kaydet';
         saveButton.id = id;
         saveButton.onclick = function () {
-            //Eğer id'si varsa mevcut yorumu güncelle
             if (this.id) {
                 let editedComment = document.getElementsByClassName(this.id)[1].textContent;
                 let path = DB.TASK + selectedTask.id + "/" + "comments" + "/" + this.id;
                 let updateData = {
                     text: editedComment,
-                    date: DATE_NOW
+                    date: getDate()
                 };
                 firebase.database().ref(path).update(updateData, (error) => {
                     if (error) {
@@ -329,12 +311,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 })
             }
-            // Eğer id'si yoksa yeni yorum ekle
             else {
                 let path = DB.TASK + selectedTask.id + "/" + "comments" + "/";
                 const comments = document.getElementsByClassName("comment-content");
                 let insertComment = getComment();
-                let insertDate = DATE_NOW;
+                let insertDate = getDate();
                 let insertData = {
                     text: insertComment,
                     date: insertDate
@@ -352,9 +333,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             console.log(selectedTask);
         };
-        saveButton.style.display = 'none'; // Başlangıçta butonu gizleyelim
+        saveButton.style.display = 'none';
         const deleteButton = document.createElement('button');
-        deleteButton.innerText = 'X'; // Silme butonu için basit bir metin
+        deleteButton.innerText = 'X';
         deleteButton.className = 'delete-comment-btn ' + id;
         deleteButton.onclick = function () {
             let deletedCommentId = this.className.split(' ')[1];
@@ -374,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
 
-        commentContainer.insertBefore(deleteButton, commentContainer.firstChild); // Silme butonunu yorum içeriğinden önce ekleyin
+        commentContainer.insertBefore(deleteButton, commentContainer.firstChild);
 
         commentContainer.className = 'comment';
 
@@ -421,8 +402,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function filterTasksByStatus(status) {
-        const filteredTasks = tasks.filter(task => task.status === status);
-        renderTasks(filteredTasks);
         let message = "Filter: ";
         switch (status) {
             case STATUS.CONTINUING:
@@ -439,11 +418,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 break;
         }
         chooseFilterSpanInfo.innerText = message;
+
+        let filter ={key:"status",value:status};
+        queryTask(filter,(responseTask)=>{
+            renderTasks(Object.values(responseTask));
+        })
     }
 
-    function showAllTasks(params) {
-        renderTasks(tasks);
-        chooseFilterSpanInfo.innerText = "Filter: "+CHOOSE_FILTER.ALL;
+    function showAllTasks(value) {
+        let filter ={key:"status",value:value}
+        queryTask(filter,(responseTask)=>{
+            renderTasks(Object.values(responseTask));
+            chooseFilterSpanInfo.innerText = "Filter: "+CHOOSE_FILTER.ALL;
+        })
+
     }
 
     function saveTask() {
@@ -457,15 +445,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const title = document.getElementById("title").value;
 
-        var taskObject = {
+        let taskObject = {
 
             code: labelType + "-" + code,
             header: header,
             type: taskType,
             status: "0",
-            createdAt: DATE_NOW,
+            createdAt: getDate(),
             title: title,
-            lastUpdated: DATE_NOW,
+            lastUpdated: getDate(),
             completionDate: "null",
             comments: {},
             cancelDate:"null"
@@ -487,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function () {
         FirebaseRealtime.UpdateTask({
             path: DB.TASK,
             where: { "key": selectedTask.id },
-            params: { "status": STATUS.COMPLETE, "completionDate": DATE_NOW },
+            params: { "status": STATUS.COMPLETE, "completionDate": getDate() },
             done: (updateResponse) => {
                 if (updateResponse) {
                     btnSetTaskCompleted.style.display = "none";
@@ -521,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function () {
         FirebaseRealtime.UpdateTask({
             path: DB.TASK,
             where: { "key": selectedTask.id },
-            params: { "status": STATUS.CANCEL, "cancelDate": DATE_NOW },
+            params: { "status": STATUS.CANCEL, "cancelDate": getDate() },
             done: (updateResponse) => {
                 if (updateResponse) {
                     btnSetTaskCancel.style.display = "none";
@@ -534,14 +522,29 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
     }
+    function deleteTask(){
+        let openedTaskCode = document.getElementById("taskCode").innerText;
+        let openedTask = tasks.filter(i=>i.code == openedTaskCode)[0];
+        if (confirm("[ " + openedTaskCode + " ]" + " kodlu taskı silmek istediğinize emin misiniz?")) {
+            let path = DB.TASK + openedTask.id;
+            firebase.database().ref(path).remove()
+                .then(function () {
+                    console.log("Görev silindi!");
+                    $('#taskDetailsModal').modal('hide')
+                })
+                .catch(function (error) {
+                    throw new Error("delete comment error", error).stack;
+                });
+        }
+    }
 
     function getComment() {
         const comments = document.getElementsByClassName("comment-content");
         let insertComment;
 
-        for (let i = 0; i < comments.length; i++) {
-            if (comments[i].classList.length === 1) {
-                insertComment = comments[i].textContent;
+        for (const element of comments) {
+            if (element.classList.length === 1) {
+                insertComment = element.textContent;
                 break;
             }
         }
@@ -552,16 +555,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const buttons = document.getElementsByClassName("save-comment-btn");
         let selectedButon;
 
-        for (let i = 0; i < buttons.length; i++) {
-            if (buttons[i].id.length == 0) {
-                selectedButon = buttons[i];
+        for (const element of buttons) {
+            if (element.id.length == 0) {
+                selectedButon = element;
                 break;
             }
         }
         return selectedButon;
     }
     function updateLastUpdated() {
-        firebase.database().ref(DB.TASK + selectedTask.id).update({ lastUpdated: DATE_NOW }, (error) => {
+        firebase.database().ref(DB.TASK + selectedTask.id).update({ lastUpdated: getDate() }, (error) => {
             if (error) {
                 throw new Error("update task date error", error).stack;
             }
@@ -612,36 +615,45 @@ document.addEventListener('DOMContentLoaded', function () {
         navigator.clipboard.writeText(selectedTask.code).then(function() {
             alert("Panoya kopyalandı!");
         }, function() {
-            /* clipboard write failed */
             alert("Panoya kopyalanırken hata oluştu!");
         });
     }
+    function getDate(){
+        return new Date().toLocaleDateString('tr-TR', { weekday: "short", year: "numeric", month: "short", day: "numeric" }) + " " + new Date().toLocaleTimeString('tr-TR');
+    }
 
-    FirebaseRealtime.QueryTasks({
-        path: DB.TASK,
-        done: (queryResults) => {
-            for (var key in queryResults) {
-                if (queryResults.hasOwnProperty(key)) {
-                    queryResults[key].id = key;
-
-                    // Eğer comments anahtarı varsa ve bu bir obje ise
-                    if (queryResults[key].comments && typeof queryResults[key].comments === 'object') {
-                        for (var commentKey in queryResults[key].comments) {
-                            if (queryResults[key].comments.hasOwnProperty(commentKey)) {
-                                queryResults[key].comments[commentKey].id = commentKey;
+    function queryTask(filter,callback){
+        FirebaseRealtime.QueryTasks({
+            path: DB.TASK,
+            filter:filter,
+            done: (queryResults) => {
+                tasks = Object.values(queryResults);
+                callback(queryResults);
+            },
+            fail: (error) => {
+                throw new Error("QueryTasks Error").stack;
+            }
+        })
+    }
+    function start(){
+        let filter = {key:"status",value:STATUS.CONTINUING}
+        queryTask(filter,(responseTask)=>{
+            for (let key in responseTask) {
+                if (responseTask.hasOwnProperty(key)) {
+                    responseTask[key].id = key;
+                    if (responseTask[key].comments && typeof responseTask[key].comments === 'object') {
+                        for (let commentKey in responseTask[key].comments) {
+                            if (responseTask[key].comments.hasOwnProperty(commentKey)) {
+                                responseTask[key].comments[commentKey].id = commentKey;
                             }
                         }
                     }
                 }
             }
-            tasks = Object.values(queryResults);
+            tasks = Object.values(responseTask);
             renderTasks(tasks.filter(i => i.status == "0"));
             chooseFilterSpanInfo.innerText = "Filter: "+CHOOSE_FILTER.CONTINUING;
-        },
-        fail: (error) => {
-            throw new Error("QueryTasks Error").stack;
-        }
-    })
-
+        })
+    }
+    start();
 });
-

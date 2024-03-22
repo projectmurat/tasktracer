@@ -12,4 +12,3 @@ const CHOOSE_FILTER = {
     "CANCEL":"İptal",
     "ALL":"Tümü"
 }
-const DATE_NOW = new Date().toLocaleDateString('tr-TR', { weekday: "short", year: "numeric", month: "short", day: "numeric" }) + " " + new Date().toLocaleTimeString('tr-TR');
