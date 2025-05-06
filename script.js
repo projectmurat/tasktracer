@@ -42,7 +42,15 @@ document.addEventListener('DOMContentLoaded', function () {
             let company;
             if (taskCompany == "QF") {
                 company = "https://www.sigortadunyasi.com.tr/wp-content/uploads/2018/02/quick-logo.jpg";
-            } else company = "https://northerntelecom.co.uk/media/catalog/product/cache/9865e7c78010b30dbab4bfc2196f1976/v/o/vodaphone_3.jpg"
+
+            }
+            else if(taskCompany == "SF"){
+                company = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuYnrKO5HWjil0ZXkDNyahIin5XOtyQ6a-Ww&s";
+            }
+            else if(taskCompany == "PP"){
+                company = "https://cdn-icons-png.flaticon.com/512/762/762686.png";
+            }
+            else company = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE8HX7qb4U31mU2NkcdAEZB77dHX5phPYayQ&s";
             const taskItem = document.createElement('li');
             taskItem.className = 'task-item';
 
@@ -78,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
             taskImage.src = company;
             taskImage.alt = "Resmin açıklaması";
             taskImage.style.marginRight = '10px';
-            taskImage.width = taskCompany == "QF" ? "125" : "80";
+            taskImage.width = taskCompany == "PP" ? "85":"125"//taskCompany == "QF" ? "125" : "125";
             taskImage.height = "80";
             taskInfoContainer.appendChild(taskImage);
 
