@@ -58,35 +58,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const taskItem = document.createElement('li');
             taskItem.className = 'task-item';
 
-
-            const deleteIcon = document.createElement('i');
-            deleteIcon.className = 'fas fa-trash-alt';
-            deleteIcon.id = task.id;
-            deleteIcon.style.position = 'relative';
-            deleteIcon.style.top = '0px';
-            deleteIcon.style.color = 'red';
-            deleteIcon.style.right = '-5px';
-            deleteIcon.style.cursor = 'pointer';
-            deleteIcon.style.fontSize = "20px";
-            deleteIcon.addEventListener('click', function (e) {
-                e.stopPropagation();
-                if (confirm("[ " + task.code + " ]" + " kodlu taskı silmek istediğinize emin misiniz?")) {
-                    let path = DB.TASK + this.id;
-                    firebase.database().ref(path).remove()
-                        .then(function () {
-                            console.log("Görev silindi!");
-                        })
-                        .catch(function (error) {
-                            throw new Error("delete comment error", error).stack;
-                        });
-                }
-            });
-
             const taskInfoContainer = document.createElement('div');
             taskInfoContainer.style.display = 'flex';
             taskInfoContainer.style.alignItems = 'center';
-
-
 
             const taskImage = document.createElement('img');
             taskImage.src = company;
@@ -100,8 +74,6 @@ document.addEventListener('DOMContentLoaded', function () {
             taskType.className = `task-type ${task.type.toLowerCase()}`;
             taskType.innerText = task.type;
             taskInfoContainer.appendChild(taskType);
-
-            taskInfoContainer.appendChild(deleteIcon);
 
             taskItem.appendChild(taskInfoContainer);
 
@@ -528,70 +500,112 @@ document.addEventListener('DOMContentLoaded', function () {
         })
     }
     function setTaskCompleted() {
-        FirebaseRealtime.UpdateTask({
-            path: DB.TASK,
-            where: { "key": selectedTask.id },
+        updateTaskStatus({
             params: { "status": STATUS.COMPLETE, "completionDate": getDate() },
-            done: (updateResponse) => {
-                if (updateResponse) {
-                    btnSetTaskCompleted.style.display = "none";
-                    btnSetTaskKeepGoing.style.display = "block";
-                    updateLastUpdated();
-                }
+            success: {
+                title: 'Tamamlandı!',
+                text: 'Görev tamamlandı olarak işaretlendi.'
             },
-            fail: (error) => {
-                throw new Error("UpdateTask eRROR").stack;
+            uiUpdate: () => {
+                btnSetTaskCompleted.style.display = "none";
+                btnSetTaskKeepGoing.style.display = "block";
             }
-        })
+        });
     }
-    function setTaskKeepGoing(params) {
-        FirebaseRealtime.UpdateTask({
-            path: DB.TASK,
-            where: { "key": selectedTask.id },
+
+    function setTaskKeepGoing() {
+        updateTaskStatus({
             params: { "status": STATUS.CONTINUING, "completionDate": "null" },
-            done: (updateResponse) => {
-                if (updateResponse) {
-                    btnSetTaskKeepGoing.style.display = "none";
-                    btnSetTaskCompleted.style.display = "block";
-                    updateLastUpdated();
-                }
+            success: {
+                title: 'Devam Ediyor!',
+                text: 'Görev durumu "devam ediyor" olarak güncellendi.'
             },
-            fail: (error) => {
-                throw new Error("UpdateTask eRROR").stack;
+            uiUpdate: () => {
+                btnSetTaskKeepGoing.style.display = "none";
+                btnSetTaskCompleted.style.display = "block";
             }
-        })
+        });
     }
+
     function setTaskCancel() {
-        FirebaseRealtime.UpdateTask({
-            path: DB.TASK,
-            where: { "key": selectedTask.id },
-            params: { "status": STATUS.CANCEL, "cancelDate": getDate() },
-            done: (updateResponse) => {
-                if (updateResponse) {
-                    btnSetTaskCancel.style.display = "none";
-                    btnSetTaskKeepGoing.style.display = "block";
-                    updateLastUpdated();
-                }
+        updateTaskStatus({
+            // Bu işlem için bir onay isteyelim
+            confirmation: {
+                title: 'Görevi İptal Et?',
+                text: 'Bu görevi iptal etmek istediğinizden emin misiniz? Bu durum filtrelerde görünecektir.',
             },
-            fail: (error) => {
-                throw new Error("UpdateTask eRROR").stack;
+            params: { "status": STATUS.CANCEL, "cancelDate": getDate() },
+            success: {
+                title: 'İptal Edildi!',
+                text: 'Görev iptal edildi olarak işaretlendi.'
+            },
+            uiUpdate: () => {
+                btnSetTaskCancel.style.display = "none";
+                btnSetTaskKeepGoing.style.display = "block"; // veya btnSetTaskCompleted
             }
-        })
+        });
     }
     function deleteTask() {
-        let openedTaskCode = document.getElementById("taskCode").innerText;
-        let openedTask = tasks.filter(i => i.code == openedTaskCode)[0];
-        if (confirm("[ " + openedTaskCode + " ]" + " kodlu taskı silmek istediğinize emin misiniz?")) {
-            let path = DB.TASK + openedTask.id;
-            firebase.database().ref(path).remove()
-                .then(function () {
-                    console.log("Görev silindi!");
-                    $('#taskDetailsModal').modal('hide')
-                })
-                .catch(function (error) {
-                    throw new Error("delete comment error", error).stack;
-                });
+        const openedTaskCode = document.getElementById("taskCode").innerText;
+        // Not: find metodu, filter'dan daha verimlidir çünkü ilk eşleşmeyi bulduğunda durur.
+        const openedTask = tasks.find(i => i.code == openedTaskCode);
+
+        if (!openedTask) {
+            console.error("Silinecek task bulunamadı!");
+            return;
         }
+
+        // 1. Adım: Kullanıcıdan modern bir pencere ile onay al
+        Swal.fire({
+            title: 'Bu işlem geri alınamaz!',
+            html: `<b>${openedTaskCode}</b> kodlu taskı kalıcı olarak silmek istediğinizden emin misiniz?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, sil!',
+            cancelButtonText: 'İptal',
+            // Koyu tema için
+            background: '#2d333d',
+            color: '#d6d6d6'
+        }).then((result) => {
+            // 2. Adım: Kullanıcı "Evet, sil!" butonuna tıklarsa devam et
+            if (result.isConfirmed) {
+
+                const path = DB.TASK + openedTask.id;
+
+                // 3. Adım: Firebase'den silme işlemini gerçekleştir
+                firebase.database().ref(path).remove()
+                    .then(() => {
+                        // 4. Adım: İşlem başarılı olursa modal'ı kapat ve başarı bildirimi göster
+                        $('#taskDetailsModal').modal('hide');
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Silindi!',
+                            text: `${openedTaskCode} kodlu görev başarıyla silindi.`,
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            background: '#2d333d',
+                            color: '#d6d6d6'
+                        });
+                    })
+                    .catch((error) => {
+                        // 5. Adım: Hata olursa kullanıcıyı bilgilendir
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: 'Görev silinirken bir sorun oluştu.',
+                            background: '#2d333d',
+                            color: '#d6d6d6'
+                        });
+                        console.error("Delete Task Error:", error);
+                    });
+            }
+        });
     }
 
     function getComment() {
@@ -712,6 +726,78 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+    }
+
+    /**
+ * Bir görevin durumunu güncelleyen, bildirimleri gösteren ve UI'ı düzenleyen ana fonksiyon.
+ * @param {object} config - Güncelleme için yapılandırma nesnesi.
+ * @param {object} config.params - Firebase'e gönderilecek güncelleme verisi.
+ * @param {object} config.success - Başarı durumunda gösterilecek bildirim bilgileri.
+ * @param {function} config.uiUpdate - Başarı durumunda çalıştırılacak arayüz güncelleme fonksiyonu.
+ * @param {object} [config.confirmation] - (Opsiyonel) İşlem öncesi gösterilecek onay penceresi bilgileri.
+ */
+    function updateTaskStatus(config) {
+        const taskUpdateProcess = () => {
+            FirebaseRealtime.UpdateTask({
+                path: DB.TASK,
+                where: { "key": selectedTask.id },
+                params: config.params,
+                done: (updateResponse) => {
+                    if (updateResponse) {
+                        // 1. Arayüzü güncelle
+                        config.uiUpdate();
+                        updateLastUpdated();
+                        $('#taskDetailsModal').modal('hide');
+
+                        // 2. Başarı bildirimi göster
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: config.success.title,
+                            text: config.success.text,
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            background: '#2d333d',
+                            color: '#d6d6d6'
+                        });
+                    }
+                },
+                fail: (error) => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Görev güncellenirken bir sorun oluştu.',
+                        background: '#2d333d',
+                        color: '#d6d6d6'
+                    });
+                    console.error("UpdateTask Error:", error);
+                }
+            });
+        };
+
+        // Eğer bir onay penceresi gerekiyorsa, önce onu göster
+        if (config.confirmation) {
+            Swal.fire({
+                title: config.confirmation.title,
+                text: config.confirmation.text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, onayla!',
+                cancelButtonText: 'İptal',
+                background: '#2d333d',
+                color: '#d6d6d6'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    taskUpdateProcess(); // Onaylanırsa güncelleme işlemini başlat
+                }
+            });
+        } else {
+            taskUpdateProcess(); // Onay gerekmiyorsa direkt güncelle
+        }
     }
     function start() {
         let filter = { key: "status", value: STATUS.CONTINUING }
