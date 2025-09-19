@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnDeleteTaskCancel = document.getElementById("deleteTaskButton");
     const chooseFilterSpanInfo = document.getElementById("chooseFilterLabelSpan");
     const copyClipBoardButton = document.getElementById("copy-button");
+    const settingsButton = document.getElementById('settingsButton');
+    const sidebarLinks = document.querySelectorAll('#settingsSidebar a');
+    const settingPanes = document.querySelectorAll('.setting-pane');
 
     searchBox.addEventListener('input', filterTasks);
     showCompleted.addEventListener('click', () => filterTasksByStatus(STATUS.COMPLETE));
@@ -28,9 +31,10 @@ document.addEventListener('DOMContentLoaded', function () {
     btnTaskAdd.addEventListener('click', () => saveTask());
     btnSetTaskCompleted.addEventListener('click', () => setTaskCompleted());
     btnSetTaskKeepGoing.addEventListener('click', () => setTaskKeepGoing());
-    btnSetTaskCancel.addEventListener('click',() => setTaskCancel());
-    btnDeleteTaskCancel.addEventListener('click',() => deleteTask());
-    copyClipBoardButton.addEventListener('click',() => copyToClipboard());
+    btnSetTaskCancel.addEventListener('click', () => setTaskCancel());
+    btnDeleteTaskCancel.addEventListener('click', () => deleteTask());
+    copyClipBoardButton.addEventListener('click', () => copyToClipboard());
+    settingsButton.addEventListener('click', () => settingsButtonClicked());
 
 
     function renderTasks(filteredTasks) {
@@ -44,10 +48,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 company = "https://www.sigortadunyasi.com.tr/wp-content/uploads/2018/02/quick-logo.jpg";
 
             }
-            else if(taskCompany == "SF"){
+            else if (taskCompany == "SF") {
                 company = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuYnrKO5HWjil0ZXkDNyahIin5XOtyQ6a-Ww&s";
             }
-            else if(taskCompany == "PP"){
+            else if (taskCompany == "PP") {
                 company = "https://cdn-icons-png.flaticon.com/512/762/762686.png";
             }
             else company = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE8HX7qb4U31mU2NkcdAEZB77dHX5phPYayQ&s";
@@ -58,10 +62,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const deleteIcon = document.createElement('i');
             deleteIcon.className = 'fas fa-trash-alt';
             deleteIcon.id = task.id;
-            deleteIcon.style.position = 'absolute';
-            deleteIcon.style.top = '7px';
-            deleteIcon.style.right = '7px';
+            deleteIcon.style.position = 'relative';
+            deleteIcon.style.top = '0px';
+            deleteIcon.style.color = 'red';
+            deleteIcon.style.right = '-5px';
             deleteIcon.style.cursor = 'pointer';
+            deleteIcon.style.fontSize = "20px";
             deleteIcon.addEventListener('click', function (e) {
                 e.stopPropagation();
                 if (confirm("[ " + task.code + " ]" + " kodlu taskı silmek istediğinize emin misiniz?")) {
@@ -80,13 +86,13 @@ document.addEventListener('DOMContentLoaded', function () {
             taskInfoContainer.style.display = 'flex';
             taskInfoContainer.style.alignItems = 'center';
 
-            taskInfoContainer.appendChild(deleteIcon);
+
 
             const taskImage = document.createElement('img');
             taskImage.src = company;
             taskImage.alt = "Resmin açıklaması";
             taskImage.style.marginRight = '10px';
-            taskImage.width = taskCompany == "PP" ? "85":"125"//taskCompany == "QF" ? "125" : "125";
+            taskImage.width = taskCompany == "PP" ? "85" : "125"//taskCompany == "QF" ? "125" : "125";
             taskImage.height = "80";
             taskInfoContainer.appendChild(taskImage);
 
@@ -94,6 +100,8 @@ document.addEventListener('DOMContentLoaded', function () {
             taskType.className = `task-type ${task.type.toLowerCase()}`;
             taskType.innerText = task.type;
             taskInfoContainer.appendChild(taskType);
+
+            taskInfoContainer.appendChild(deleteIcon);
 
             taskItem.appendChild(taskInfoContainer);
 
@@ -427,34 +435,42 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         chooseFilterSpanInfo.innerText = message;
 
-        let filter ={key:"status",value:status};
-        queryTask(filter,(responseTask)=>{
+        let filter = { key: "status", value: status };
+        queryTask(filter, (responseTask) => {
             renderTasks(Object.values(responseTask));
         })
     }
 
     function showAllTasks(value) {
-        let filter ={key:"status",value:value}
-        queryTask(filter,(responseTask)=>{
+        let filter = { key: "status", value: value }
+        queryTask(filter, (responseTask) => {
             renderTasks(Object.values(responseTask));
-            chooseFilterSpanInfo.innerText = "Filter: "+CHOOSE_FILTER.ALL;
+            chooseFilterSpanInfo.innerText = "Filter: " + CHOOSE_FILTER.ALL;
         })
 
     }
 
     function saveTask() {
         const labelType = document.getElementById("labelType").value;
-
         const code = document.getElementById("code").value;
-
         const header = document.getElementById("header").value;
-
         const taskType = document.getElementById("taskType").value;
-
         const title = document.getElementById("title").value;
 
-        let taskObject = {
+        if (code.trim() === '' || header.trim() === '' || title.trim() === '' || labelType.trim() === '' || taskType.trim() === '') {
 
+            Swal.fire({
+                icon: 'error',
+                title: 'Eksik Bilgi',
+                text: 'Lütfen Kod, Başlık ve Açıklama alanlarını doldurduğunuzdan emin olun.',
+                background: '#2d333d',
+                color: '#d6d6d6'
+            });
+
+            return;
+        }
+
+        let taskObject = {
             code: labelType + "-" + code,
             header: header,
             type: taskType,
@@ -464,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function () {
             lastUpdated: getDate(),
             completionDate: "null",
             comments: {},
-            cancelDate:"null"
+            cancelDate: "null"
         };
         FirebaseRealtime.SaveTask({
             path: DB.TASK,
@@ -472,10 +488,42 @@ document.addEventListener('DOMContentLoaded', function () {
             done: (saveResponse) => {
                 if (saveResponse) {
                     $('#taskAddModal').modal('hide');
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        icon: 'success',
+                        title: 'Task Başarıyla Eklendi!',
+                        text: `'${taskObject.code}' kodlu yeni görev oluşturuldu.`,
+                        background: '#2d333d',
+                        color: '#d6d6d6',
+
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInRight'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutRight'
+                        },
+
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
                 }
             },
             fail: (error) => {
-                throw new Error("SaveTask Error").stack;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata!',
+                    text: 'Task eklenirken bir sorun oluştu. Lütfen tekrar deneyin.',
+                    background: '#2d333d',
+                    color: '#d6d6d6'
+                });
+                console.error("SaveTask Error:", error);
             }
         })
     }
@@ -513,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
     }
-    function setTaskCancel(){
+    function setTaskCancel() {
         FirebaseRealtime.UpdateTask({
             path: DB.TASK,
             where: { "key": selectedTask.id },
@@ -530,9 +578,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
     }
-    function deleteTask(){
+    function deleteTask() {
         let openedTaskCode = document.getElementById("taskCode").innerText;
-        let openedTask = tasks.filter(i=>i.code == openedTaskCode)[0];
+        let openedTask = tasks.filter(i => i.code == openedTaskCode)[0];
         if (confirm("[ " + openedTaskCode + " ]" + " kodlu taskı silmek istediğinize emin misiniz?")) {
             let path = DB.TASK + openedTask.id;
             firebase.database().ref(path).remove()
@@ -620,20 +668,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return new Date(year, month, day, hour, minute, second);
     }
     function copyToClipboard() {
-        navigator.clipboard.writeText(selectedTask.code).then(function() {
+        navigator.clipboard.writeText(selectedTask.code).then(function () {
             alert("Panoya kopyalandı!");
-        }, function() {
+        }, function () {
             alert("Panoya kopyalanırken hata oluştu!");
         });
     }
-    function getDate(){
+    function getDate() {
         return new Date().toLocaleDateString('tr-TR', { weekday: "short", year: "numeric", month: "short", day: "numeric" }) + " " + new Date().toLocaleTimeString('tr-TR');
     }
 
-    function queryTask(filter,callback){
+    function queryTask(filter, callback) {
         FirebaseRealtime.QueryTasks({
             path: DB.TASK,
-            filter:filter,
+            filter: filter,
             done: (queryResults) => {
                 tasks = Object.values(queryResults);
                 callback(queryResults);
@@ -643,9 +691,31 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
     }
-    function start(){
-        let filter = {key:"status",value:STATUS.CONTINUING}
-        queryTask(filter,(responseTask)=>{
+    function settingsButtonClicked() {
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                const targetPaneId = this.getAttribute('data-target');
+
+                settingPanes.forEach(pane => {
+                    pane.style.display = 'none';
+                });
+
+                document.querySelector(targetPaneId).style.display = 'block';
+            });
+        })
+        $('#settingsModal').modal('show');
+
+
+
+    }
+    function start() {
+        let filter = { key: "status", value: STATUS.CONTINUING }
+        queryTask(filter, (responseTask) => {
             for (let key in responseTask) {
                 if (responseTask.hasOwnProperty(key)) {
                     responseTask[key].id = key;
@@ -660,7 +730,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             tasks = Object.values(responseTask);
             renderTasks(tasks.filter(i => i.status == "0"));
-            chooseFilterSpanInfo.innerText = "Filter: "+CHOOSE_FILTER.CONTINUING;
+            chooseFilterSpanInfo.innerText = "Filter: " + CHOOSE_FILTER.CONTINUING;
         })
     }
     start();

@@ -15,6 +15,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.2.7/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.2.7/firebase-database.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="taskFirebase.js"></script>
 
     <style>
@@ -92,8 +95,12 @@
 </head>
 
 <body>
+    <div id="auth-loader">
+        <div class="loader-spinner"></div>
+        <p>Yükleniyor...</p>
+    </div>
 
-    <div id="login-container">
+    <div id="login-container" style="display: none;">
         <div class="login-box">
             <form id="login-form">
                 <h2>İş Takip Sistemine Giriş</h2>
@@ -135,49 +142,21 @@
         <div class="loaderText" id="loaderText">Yükleniyor</div>
         <div class="loader" id="loader"></div>
         <ul id="taskList" style="margin-top: 10px; padding-bottom: 100px;"></ul>
-        <div id="fixedFooter" style="
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(to right, #2d333d, #232832);
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-            z-index: 999;
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 15px;
-        ">
-            <span style="font-weight: 500;">İşlem Menüsü</span>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="openSettings()"
-                    style="background-color: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background-color 0.3s ease;"
-                    onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'"
-                    onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'">
-                    ⚙️ Ayarlar
-                </button>
-                <button onclick="refreshTasks()"
-                    style="background-color: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background-color 0.3s ease;"
-                    onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'"
-                    onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'">
-                    🔄 Yenile
-                </button>
+        <div id="floating-menu">
+            <button id="settingsButton" class="menu-button" title="Ayarlar">
+                <i class="fas fa-cog"></i>
+            </button>
+            <button onclick="location.reload()" class="menu-button" title="Yenile">
+                <i class="fas fa-sync-alt"></i>
+            </button>
 
-                <button id="addTaskButton"
-                    style="background-color: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background-color 0.3s ease;"
-                    onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'"
-                    onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'">
-                    ➕ Yeni Task Ekle </button>
-                <button id="logout-button"
-                    style="background-color: rgba(255, 82, 82, 0.7); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background-color 0.3s ease;"
-                    onmouseover="this.style.backgroundColor='rgba(255, 82, 82, 0.9)'"
-                    onmouseout="this.style.backgroundColor='rgba(255, 82, 82, 0.7)'">
-                    🚪 Çıkış Yap
-                </button>
-            </div>
+            <button id="addTaskButton" class="menu-button primary" title="Yeni Task Ekle">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button id="logout-button" class="menu-button danger" title="Çıkış Yap">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
         </div>
     </div>
 
@@ -284,6 +263,115 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-success" id="btnTaskAdd">Add Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content custom-modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel"><i class="fas fa-sliders-h me-2"></i>Uygulama
+                        Ayarları</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="settings-container">
+                        <nav id="settingsSidebar" class="settings-sidebar">
+                            <a href="#" class="active" data-target="#profile-settings"><i
+                                    class="fas fa-user-circle me-2"></i>Profil</a>
+                            <a href="#" data-target="#appearance-settings"><i
+                                    class="fas fa-palette me-2"></i>Görünüm</a>
+                            <a href="#" data-target="#notifications-settings"><i
+                                    class="fas fa-bell me-2"></i>Bildirimler</a>
+                            <a href="#" data-target="#data-api-settings"><i class="fas fa-database me-2"></i>Veri &
+                                API</a>
+                        </nav>
+
+                        <div class="settings-content">
+                            <div id="profile-settings" class="setting-pane" style="display: block;">
+                                <h6 class="setting-title">Kullanıcı Profili</h6>
+                                <div class="setting-item profile-item">
+                                    <div class="avatar-upload">
+                                        <img src="https://placehold.co/80" alt="Avatar" id="userAvatar">
+                                        <label for="avatarInput" class="avatar-edit-button"><i
+                                                class="fas fa-camera"></i></label>
+                                        <input type="file" id="avatarInput" hidden>
+                                    </div>
+                                    <div class="profile-inputs">
+                                        <label for="userNameInput">Ad Soyad</label>
+                                        <input type="text" id="userNameInput" class="form-control-custom"
+                                            value="Kullanıcı Adı">
+                                        <label for="userEmailInput">E-posta</label>
+                                        <input type="email" id="userEmailInput" class="form-control-custom"
+                                            value="kullanici@mail.com" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="appearance-settings" class="setting-pane">
+                                <h6 class="setting-title">Görünüm Ayarları</h6>
+                                <div class="setting-item">
+                                    <label for="darkModeToggle">Koyu Mod</label>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="darkModeToggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </div>
+                                <p class="setting-description">Uygulamanın genel temasını açık veya koyu olarak
+                                    ayarlayın.</p>
+                                <div class="setting-item mt-4">
+                                    <label for="languageSelect">Dil</label>
+                                    <select id="languageSelect" class="form-control-custom">
+                                        <option>Türkçe</option>
+                                        <option>English</option>
+                                    </select>
+                                </div>
+                                <p class="setting-description">Uygulama dilini değiştirin.</p>
+                            </div>
+
+                            <div id="notifications-settings" class="setting-pane">
+                                <h6 class="setting-title">Bildirim Ayarları</h6>
+                                <div class="setting-item">
+                                    <label for="taskUpdateToggle">Task Güncellemeleri</label>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="taskUpdateToggle" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </div>
+                                <p class="setting-description">Atandığınız veya yorum yapılan tasklar için bildirim
+                                    alın.</p>
+                            </div>
+
+                            <div id="data-api-settings" class="setting-pane">
+                                <h6 class="setting-title">Veri & API Yönetimi</h6>
+                                <div class="setting-item">
+                                    <label>API Anahtarınız</label>
+                                    <div class="api-key-item">
+                                        <input type="text" class="form-control-custom"
+                                            value="********-****-****-****-************" readonly>
+                                        <button class="btn btn-sm btn-outline-secondary"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                                <p class="setting-description">Harici uygulamalar için API anahtarınız.</p>
+                                <h6 class="setting-title danger-title mt-4">Tehlikeli Alan</h6>
+                                <div class="setting-item">
+                                    <label>Tamamlanan Taskları Sil</label>
+                                    <button id="deleteTasksBtn" class="btn btn-danger-custom"><i
+                                            class="fas fa-trash-alt me-2"></i>Tümünü Sil</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" id="saveSettingsBtn">Değişiklikleri Kaydet</button>
                 </div>
             </div>
         </div>
