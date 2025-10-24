@@ -6,6 +6,11 @@ body {
     background-position: center center;
 }
 
+#app-container {
+    width: 100%;
+    max-width: 90%;
+}
+
 .comment-date {
     flex: 1;
     text-align: right;
@@ -106,7 +111,7 @@ body {
 
 .search-wrapper {
     position: relative;
-    width: 250px;
+    width: 90%;
 }
 
 #searchBox {
@@ -146,7 +151,6 @@ body {
     transition: background-color 0.3s;
     outline: none;
     width: 100%;
-    border-radius: 5px;
     color: rgb(86, 86, 86);
     box-shadow: -5px 6px 5px rgba(0, 0, 0, 0.5);
 }
@@ -217,7 +221,6 @@ body {
     flex-direction: column;
     gap: 10px;
     transition: all 0.3s ease;
-    box-shadow: -5px 6px 5px rgba(8, 255, 3, 0.5);
     cursor: pointer;
 }
 
@@ -342,9 +345,11 @@ body {
 
 .task-title,
 .task-code {
-    font-size: 1.0em;
+    font-size: 1.2em;
     color: #0000009c;
     font-weight: bold;
+    max-width: -webkit-fill-available;
+    word-wrap: break-word;
 }
 
 .task-title-label,
@@ -463,7 +468,7 @@ body {
 
 
 .header {
-    background-color: #343434;
+    background-color: #4df7d424;
     padding: 0px 10px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -541,12 +546,6 @@ body {
     visibility: visible;
     opacity: 1;
 }
-
-
-
-
-
-
 
 
 
@@ -824,8 +823,7 @@ body {
 
 .avatar-upload {
     position: sticky;
-    display: flex
-;
+    display: flex;
     justify-content: space-around;
     align-items: center;
 }

@@ -43,20 +43,38 @@ document.addEventListener('DOMContentLoaded', function () {
         sumRegisterSpan.innerText = "Toplam Kayıt Sayısı: " + filteredTasks.length;
         filteredTasks.forEach(task => {
             let taskCompany = task.code.slice(0, 2);
-            let company;
+            let company, background, boxShadow;
             if (taskCompany == "QF") {
                 company = "https://www.sigortadunyasi.com.tr/wp-content/uploads/2018/02/quick-logo.jpg";
-
+                background = "linear-gradient(135deg, rgb(248, 0, 124), rgb(116 75 96), rgb(0 255 86 / 87%))";
+                // ; !important" KISMINI KALDIRIN
+                boxShadow = "-5px 6px 5px rgba(248, 0, 124, 0.5)";
             }
             else if (taskCompany == "SF") {
                 company = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuYnrKO5HWjil0ZXkDNyahIin5XOtyQ6a-Ww&s";
+                background = "linear-gradient(135deg, rgb(0, 185, 192), rgb(117 255 161 / 87%))";
+                // ; !important" KISMINI KALDIRIN
+                boxShadow = "-5px 6px 5px rgba(0, 185, 192, 0.5)";
             }
             else if (taskCompany == "PP") {
                 company = "https://cdn-icons-png.flaticon.com/512/762/762686.png";
+                background = "linear-gradient(135deg, rgb(255, 230, 0), #dd1111dd)";
+                // ; !important" KISMINI KALDIRIN
+                boxShadow = "-5px 6px 5px rgba(255, 230, 0, 0.5)";
             }
-            else company = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE8HX7qb4U31mU2NkcdAEZB77dHX5phPYayQ&s";
+            else if (taskCompany == "VF") {
+                company = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE8HX7qb4U31mU2NkcdAEZB77dHX5phPYayQ&s";
+                background = "linear-gradient(135deg, rgb(245, 247, 250), rgb(237 104 104 / 87%))";
+                // ; !important" KISMINI KALDIRIN
+                boxShadow = "-5px 6px 5px rgba(237, 104, 87, 0.5)";
+            }
+
             const taskItem = document.createElement('li');
             taskItem.className = 'task-item';
+            taskItem.style.background = background;
+
+            // Bu satır artık düzgün çalışacaktır
+            taskItem.style.boxShadow = boxShadow;
 
             const taskInfoContainer = document.createElement('div');
             taskInfoContainer.style.display = 'flex';
